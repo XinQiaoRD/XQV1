@@ -49,6 +49,14 @@ Media.prototype.end = function(fn, unbind){
     }.bind(this));
 };
 
+Media.prototype.loopEnd  = function(fn){
+    if(!this.m.length) return;
+    this.m.bind('playing', function(){
+        fn(this.m[0].currentTime, this);
+    }.bind(this));
+
+};
+
 Media.prototype.unbind = function(id){
     if(!this.m.length) return;
     //Log("【Media.unbind】：清除所有绑定");
@@ -86,4 +94,14 @@ Media.prototype.time = function(num){
     //Log("【Media.unbind】：清除所有绑定");
     if(num || num===0) this.m[0].currentTime = num;
     else return this.m[0].currentTime;
+};
+
+Media.prototype.loop = function(mk){
+    if(mk){
+        this.ifLoop = true;
+        this.m[0].loop = true;
+    }else{
+        this.ifLoop = false;
+        this.m[0].loop = false;
+    }
 };

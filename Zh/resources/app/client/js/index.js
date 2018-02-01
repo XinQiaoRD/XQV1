@@ -11,8 +11,6 @@ Room.Loader.ppt = ()=>{
 Room.Index = {};
 Room.Index.dom = ()=>{
 
-    Dom.Video = new Media("#Video video");
-
     $$("#Index").click(function(){
         Room.Index.ppt();
     });
@@ -21,7 +19,57 @@ Room.Index.dom = ()=>{
         Room.Index.back();
     });
 
+    ws.on("reload", function(){
+        location.reload();
+    });
 
+    Room.Index.video_io();
+};
+
+Room.Index.video_io = ()=>{
+
+    Dom.Video = new Media("#Video video");
+    //Dom.Video.loop(true);
+    Dom.VideoCtrl = "VideoCtrl1";
+
+    if(Dom.Video.ifLoop){
+        Dom.Video.loopEnd(function(i){
+            ws.emit({to:"Guide", key:Dom.VideoCtrl+"MediaLoop", val:i});
+        });
+    }else{
+        Dom.Video.end(function(v){
+            ws.emit({to:"Guide", key:Dom.VideoCtrl+"MediaEnd"});
+            Room.Index.back();
+        });
+    }
+
+    ws.on("MediaStop", function(json){
+        Dom.Video.stop();
+    });
+
+    ws.on("MediaPlay", function(json){
+        if(json.val) Dom.Video.volume(json.val);
+        if(json.time || json.time===0) Dom.Video.time(json.time);
+        if(cc.id!="Video") Room.Index.ppt();
+        else Dom.Video.play();
+    });
+
+    ws.on("MediaEnd", function(json){
+        Room.Index.back();
+    }.bind(this));
+
+    ws.on("MediaTime", function(json){
+        if(json) Dom.Video.time(json.val);
+    }.bind(this));
+
+    ws.on("MediaLength", function(json){
+        ws.emit({to:"Guide", key:Dom.VideoCtrl+"MediaLength", val:Dom.Video.len()})
+    });
+
+    ws.on("MediaVol", function(json){
+        console.log("声音调节", json.val);
+        if(json) Dom.Video.volume(json.val);
+    });
 };
 
 Room.Index.ppt = ()=>{
