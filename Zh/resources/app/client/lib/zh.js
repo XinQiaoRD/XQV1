@@ -158,6 +158,7 @@ zh.server = function(fn){
 
     FS = require('fs');
     http = require('http');
+    var time_out = 0;
 
     console.log("开始读取本地数据（若无反应，本地数据可能错误）");
     $.getJSON("../../uploads/base.json", function(data) {
@@ -181,6 +182,17 @@ zh.server = function(fn){
         let url = zh.conf.server+zh.conf.server_uploads;//"/uploads/data.php";
         console.log("服务器地址:"+url);
 
+        
+        time_out = 1;
+        setTimeout(function(){
+            if(time_out){
+                time_out=2;
+                Base = data;
+                console.log("超时，Base准备完毕" , Base);
+                fn();
+            }
+        },30000);
+
         $.ajax({
             type:'get',
             async:false,
@@ -190,11 +202,15 @@ zh.server = function(fn){
             jsonp:'jsoncallback', //自定义的jsonp回调函数名称，默认为jQuery自动生成的随机函数名
             jsonpCallback:"success_jsonpCallback", //成功获取跨域服务器上的json数据后,会动态执行这个callback函数
             success: function(json){
+                if(time_out==2) return;
+                time_out = 0;
                 console.log("数据服务器连接成功！获取数据：" , json);
                 //是否更新判断
                 Server.sync(json, data, fn);
             },
             error:function(){
+                if(time_out==2) return;
+                time_out = 0;
                 console.log("数据服务器连接失败！", url);
                 Base = data;
                 console.log("Base准备完毕" , Base);
