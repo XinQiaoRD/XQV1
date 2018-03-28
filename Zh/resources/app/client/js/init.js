@@ -3,7 +3,7 @@ var init = {};
 init.loader = ()=>{
     Dom._unable = $("#_unable");
 
-    ws = new ws_client("ws://localhost:3001", {id:"Video1"});
+    ws = new ws_client(zh.conf.ws_server, {id:"Video1"});
     ws.connect( function(){
         setTimeout(function(){
             zh.ini();
